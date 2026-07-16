@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdulStudio - Video Creator & Editor Portfolio</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased overflow-x-hidden selection:bg-indigo-600 selection:text-white">
+
+    <!-- Alert Toast (Notification) -->
+    <div id="alert-toast" class="fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl backdrop-blur-md border border-emerald-200 bg-emerald-50 text-emerald-800 transition-all duration-300 transform translate-y-[-150%] opacity-0 pointer-events-none">
+        <i id="alert-icon" class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+        <span id="alert-msg" class="text-sm font-semibold">Portofolio berhasil ditambahkan!</span>
+    </div>
+
+    <!-- Confirm Reset Modal -->
+    <div id="confirm-reset-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 transform scale-95 transition-all duration-300">
+            <div class="flex items-center gap-3 text-amber-600 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                <h3 class="font-extrabold text-lg text-slate-900">Konfirmasi Reset Data</h3>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                Apakah Anda yakin ingin mengatur ulang data kembali ke contoh default? Seluruh data kustomisasi portofolio dan brand klien yang belum disimpan akan hilang secara permanen.
+            </p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeResetModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">
+                    Batal
+                </button>
+                <button onclick="handleResetToDefault()" class="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                    Ya, Atur Ulang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/60 px-6 py-4 transition-all">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-md shadow-indigo-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-video text-white text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500 bg-clip-text text-transparent">
+                        IdulStudio
+                    </span>
+                    <span class="hidden sm:inline-block text-[10px] text-slate-400 font-extrabold tracking-widest uppercase ml-3 border-l border-slate-200 pl-3">
+                        VIDEO CREATOR & EDITOR
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="#gallery-portfolio" class="hidden lg:inline-block text-sm text-slate-600 hover:text-indigo-600 transition font-semibold">Galeri Video</a>
+                <a href="#brand-portfolio" class="hidden lg:inline-block text-sm text-slate-600 hover:text-indigo-600 transition font-semibold">Brand Klien</a>
+                <a href="#tentang-saya" class="hidden lg:inline-block text-sm text-slate-600 hover:text-indigo-600 transition font-semibold">Tentang</a>
+                <a href="#hubungi-saya" class="hidden lg:inline-block text-sm text-slate-600 hover:text-indigo-600 transition font-semibold">Kontak</a>
+
+                <button 
+                    onclick="toggleAdminMode()"
+                    id="btn-admin-toggle"
+                    class="flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border bg-white text-slate-700 border-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 transition-all"
+                >
+                    <i class="fa-solid fa-gear"></i>
+                    <span id="admin-toggle-text">Kelola Portofolio</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative py-24 px-6 overflow-hidden bg-gradient-to-b from-white to-slate-100/50">
+        <div class="absolute top-10 left-1/4 w-[350px] h-[350px] bg-indigo-100/40 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-violet-100/30 rounded-full blur-[140px] pointer-events-none"></div>
+        
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100/80 text-indigo-700 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-6">
+                <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 animate-pulse"></i>
+                Social Media Video Specialist
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black leading-tight tracking-tight mb-6 text-slate-900">
+                Hadirkan Konten Visual <br>
+                <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500 bg-clip-text text-transparent">
+                    Berretensi Tinggi & Estetik
+                </span>
+            </h1>
+            
+            <p class="text-slate-600 text-base sm:text-xl max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
+                Membantu brand, agensi, dan kreator meningkatkan jangkauan di <strong class="text-slate-900 font-semibold">Instagram, TikTok, dan YouTube</strong> melalui racikan pacing editing yang dinamis, teknik transisi mulus, dan perancangan audio (*sound design*) yang imersif dari <strong class="text-indigo-600">IdulStudio</strong>.
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="#gallery-portfolio" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 text-base">
+                    <i class="fa-solid fa-play"></i>
+                    Eksplor Galeri Karya
+                </a>
+                <a href="#hubungi-saya" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 font-bold px-8 py-4 rounded-2xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 shadow-sm text-base">
+                    Diskusi Kolaborasi (Gratis)
+                </a>
+            </div>
+
+            <!-- Quick Metrics Section -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20 pt-10 border-t border-slate-200/80">
+                <div class="bg-white/70 backdrop-blur border border-white p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-center mb-2 text-indigo-600 bg-indigo-50 w-10 h-10 rounded-xl items-center mx-auto">
+                        <i class="fa-solid fa-fire text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-slate-900">5M+</div>
+                    <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-extrabold">Total Views Generated</div>
+                </div>
+
+                <div class="bg-white/70 backdrop-blur border border-white p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-center mb-2 text-violet-600 bg-violet-50 w-10 h-10 rounded-xl items-center mx-auto">
+                        <i class="fa-solid fa-arrow-trend-up text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-slate-900">85%</div>
+                    <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-extrabold">Avg. View Retention</div>
+                </div>
+
+                <div class="bg-white/70 backdrop-blur border border-white p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-center mb-2 text-pink-600 bg-pink-50 w-10 h-10 rounded-xl items-center mx-auto">
+                        <i class="fa-solid fa-users text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-slate-900">12+</div>
+                    <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-extrabold">Happy Brands & Creators</div>
+                </div>
+
+                <div class="bg-white/70 backdrop-blur border border-white p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-center mb-2 text-blue-600 bg-blue-50 w-10 h-10 rounded-xl items-center mx-auto">
+                        <i class="fa-solid fa-video text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-slate-900">200+</div>
+                    <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-extrabold">Videos Edited</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Panel Dashboard Section -->
+    <section id="admin-panel" class="py-12 px-6 bg-slate-100 border-y border-slate-200/80 relative scroll-mt-20 hidden">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 text-xs font-bold w-fit mb-2">
+                        <i class="fa-solid fa-gear"></i>
+                        IdulStudio Control Hub
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-900">Panel Manajemen Konten</h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Atur seluruh data portfolio video dan akun media sosial kelolaan. Data tersimpan di web-browser Anda.
+                    </p>
+                </div>
+
+                <!-- Sub-tabs in Admin mode -->
+                <div class="flex flex-wrap gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-auto justify-start">
+                    <button onclick="setAdminTab('portfolio')" id="tab-btn-portfolio" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm">
+                        Kelola Portofolio Video
+                    </button>
+                    <button onclick="setAdminTab('accounts')" id="tab-btn-accounts" class="px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        Kelola Brand & Mantan Klien
+                    </button>
+                    <button onclick="setAdminTab('data')" id="tab-btn-data" class="px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        Hosting & Cadangkan Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: Portfolio Video Form -->
+            <div id="admin-tab-portfolio" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <form id="portfolio-form" onsubmit="handleSavePortfolio(event)" class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 id="portfolio-form-title" class="text-sm font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tambah Video Baru
+                    </h3>
+
+                    <input type="hidden" id="edit-portfolio-id" value="">
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Judul Video *</label>
+                        <input type="text" id="p-title" required placeholder="Contoh: Streetwear Transitions Reel" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Klien *</label>
+                            <input type="text" id="p-client" required placeholder="Contoh: UrbanVibe Co." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Platform Video</label>
+                            <select id="p-platform" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                                <option value="youtube">YouTube</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="instagram">Instagram</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Kategori / Style</label>
+                            <input type="text" id="p-category" placeholder="Contoh: Fashion Vlog" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Video ID / Link *</label>
+                            <input type="text" id="p-embedId" required placeholder="Youtube ID / TikTok Link" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah Views</label>
+                            <input type="text" id="p-views" placeholder="Contoh: 150K+" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Rasio Retensi %</label>
+                            <input type="text" id="p-retention" placeholder="Contoh: 82%" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Link Gambar Thumbnail</label>
+                        <input type="text" id="p-thumbnail" placeholder="https://images.unsplash.com/..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Deskripsi Teknik & Pacing</label>
+                        <textarea id="p-description" rows="3" placeholder="Contoh: Transisi cepat, sinkronisasi audio, grading warna hangat..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"></textarea>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-md shadow-indigo-500/10">
+                            Tambahkan ke Galeri
+                        </button>
+                        <button type="button" onclick="resetPortfolioForm()" id="btn-cancel-p-edit" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl text-sm border border-slate-300 hidden">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+
+                <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                  <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">
+                    Karya di Galeri Saat Ini (<span id="admin-portfolio-count">0</span>)
+                  </h3>
+
+                  <div id="admin-portfolio-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-2">
+                      <!-- Dynamically Filled -->
+                  </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Managed Accounts Form -->
+            <div id="admin-tab-accounts" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
+                <form id="accounts-form" onsubmit="handleSaveAccount(event)" class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 id="account-form-title" class="text-sm font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Tambah Brand Baru
+                  </h3>
+
+                  <input type="hidden" id="edit-account-id" value="">
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Akun / Brand *</label>
+                    <input type="text" id="a-name" required placeholder="Contoh: @selera_nusantara" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Platform Utama</label>
+                      <select id="a-platform" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Niche / Industri</label>
+                      <input type="text" id="a-niche" placeholder="Contoh: F&B, Gadget, Edukasi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Followers *</label>
+                      <input type="text" id="a-followers" required placeholder="Contoh: 120K" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Growth MoM</label>
+                      <input type="text" id="a-growth" placeholder="Contoh: +15%" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Avg Views</label>
+                      <input type="text" id="a-avgViews" placeholder="Contoh: 50K" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Link Logo Brand</label>
+                    <input type="text" id="a-logo" placeholder="https://images.unsplash.com/..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Peran Anda di Akun ini</label>
+                    <input type="text" id="a-role" placeholder="Contoh: Full-Time Video Editor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                  </div>
+
+                  <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition">
+                      Tambahkan Akun
+                    </button>
+                    <button type="button" onclick="resetAccountForm()" id="btn-cancel-a-edit" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl text-sm border border-slate-300 hidden">
+                      Batal
+                    </button>
+                  </div>
+                </form>
+
+                <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                  <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">
+                    Mantan Klien / Sosmed Kelolaan Saat Ini (<span id="admin-accounts-count">0</span>)
+                  </h3>
+
+                  <div id="admin-accounts-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-2">
+                      <!-- Dynamically Filled -->
+                  </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Data Migration Guide -->
+            <div id="admin-tab-data" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6 hidden">
+                <div>
+                  <h3 class="text-lg font-black text-slate-900">Petunjuk Hosting Permanen di Vercel</h3>
+                  <p class="text-slate-600 text-sm mt-1 leading-relaxed">
+                    Karena website statis yang Anda rilis di Vercel menggunakan penyimpanan lokal (*LocalStorage*) browser, perubahan yang Anda buat melalui formulir admin hanya akan tersimpan di perangkat Anda. Agar isi portofolio Anda **permanen dan dapat dilihat oleh semua orang**, lakukan langkah mudah berikut:
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-4">
+                        <i class="fa-solid fa-download text-lg"></i>
+                      </div>
+                      <h4 class="font-bold text-slate-900 mb-1 text-sm">Unduh File Cadangan</h4>
+                      <p class="text-xs text-slate-500 leading-relaxed">
+                        Unduh semua data portofolio dan brand klien terbaru Anda sebagai file `.json`.
+                      </p>
+                    </div>
+                    <button onclick="exportData()" type="button" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                      Unduh Sekarang
+                    </button>
+                  </div>
+
+                  <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 mb-4">
+                        <i class="fa-solid fa-clipboard text-lg"></i>
+                      </div>
+                      <h4 class="font-bold text-slate-900 mb-1 text-sm">Salin Kode JSON</h4>
+                      <p class="text-xs text-slate-500 leading-relaxed">
+                        Salin format JSON terbaru ke dalam memori clipboard Anda untuk langsung ditempelkan ke kode.
+                      </p>
+                    </div>
+                    <button onclick="copyCodeForVercel()" type="button" class="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                      Salin Kode JSON
+                    </button>
+                  </div>
+
+                  <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div class="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center text-pink-600 mb-4">
+                        <i class="fa-solid fa-upload text-lg"></i>
+                      </div>
+                      <h4 class="font-bold text-slate-900 mb-1 text-sm">Impor Cadangan</h4>
+                      <p class="text-xs text-slate-500 leading-relaxed">
+                        Punya file cadangan JSON sebelumnya? Unggah ke sini untuk memperbarui tampilan galeri browser Anda.
+                      </p>
+                    </div>
+                    <div class="mt-6">
+                      <label class="block w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 rounded-xl text-xs text-center cursor-pointer">
+                        Unggah File JSON
+                        <input type="file" id="import-json-file" accept=".json" onchange="handleImportJson(event)" class="hidden">
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-file-lines text-indigo-600 text-lg mt-0.5 shrink-0"></i>
+                    <div>
+                      <h4 class="text-sm font-bold text-slate-950">Langkah Menempelkan ke Code Editor:</h4>
+                      <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                        1. Klik tombol <strong>"Salin Kode JSON"</strong> di atas.<br>
+                        2. Buka berkas kode Anda (<code class="font-mono bg-slate-200 px-1 py-0.5 rounded text-indigo-700">index.html</code>).<br>
+                        3. Cari baris konstanta <strong>DEFAULT_PORTFOLIO</strong> dan <strong>DEFAULT_ACCOUNTS</strong> pada bagian awal JavaScript di bawah.<br>
+                        4. Ganti isi array bawaan tersebut dengan menempelkan (*paste*) data baru Anda.<br>
+                        5. Commit ke Github & deploy ulang ke Vercel!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-150 flex justify-between items-center">
+                  <p class="text-xs text-slate-400">Ingin membersihkan semua data kustom yang tersimpan?</p>
+                  <button onclick="openResetModal()" type="button" class="text-xs text-red-600 hover:text-red-700 font-bold border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-xl transition">
+                    Reset Semua ke Bawaan
+                  </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Gallery Section -->
+    <section id="gallery-portfolio" class="py-24 px-6 max-w-7xl mx-auto scroll-mt-20">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+            <div>
+                <div class="text-xs text-indigo-600 font-bold tracking-widest uppercase mb-2">Pilihan Karya Terbaik</div>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900">Galeri Video Portofolio</h2>
+            </div>
+
+            <!-- Platform Filters -->
+            <div class="flex flex-wrap gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                <button onclick="setFilter('all')" id="filter-all" class="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 bg-indigo-600 text-white shadow-md">
+                    Semua Platform
+                </button>
+                <button onclick="setFilter('youtube')" id="filter-youtube" class="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50/50">
+                    <i class="fa-brands fa-youtube"></i> YouTube
+                </button>
+                <button onclick="setFilter('instagram')" id="filter-instagram" class="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-pink-600 hover:bg-pink-50/50">
+                    <i class="fa-brands fa-instagram"></i> Instagram
+                </button>
+                <button onclick="setFilter('tiktok')" id="filter-tiktok" class="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-slate-950 hover:bg-slate-100">
+                    <i class="fa-solid fa-tv"></i> TikTok
+                </button>
+            </div>
+        </div>
+
+        <!-- Portfolio Grid container -->
+        <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Dynamically Filled -->
+        </div>
+    </section>
+
+    <!-- Managed Client Accounts Section -->
+    <section id="brand-portfolio" class="py-24 bg-white border-y border-slate-200/60 scroll-mt-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="text-xs text-indigo-600 font-extrabold tracking-widest uppercase block mb-2">Pengalaman Profesional</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-4">Media Sosial Kelolaan</h2>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    Daftar akun media sosial mitra yang saya pegang dan kelola secara langsung dalam hal pacing visual, penjadwalan editorial, hingga strategi retensi video.
+                </p>
+            </div>
+
+            <!-- Accounts grid -->
+            <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Dynamically Filled -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <span class="text-xs text-indigo-600 font-extrabold tracking-widest uppercase block mb-2">Kelebihan IdulStudio</span>
+            <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-4">Layanan Video & Kreatif</h2>
+            <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                Metodologi penyuntingan modern untuk menghasilkan video sosial media yang relevan dan disukai oleh algoritme audiens terkini.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm hover:border-indigo-500/40 hover:shadow-md transition-all duration-300">
+                <div class="bg-indigo-50 text-indigo-600 p-4 rounded-2xl w-fit mb-6">
+                    <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Pacing Dinamis (3-Sec Hook)</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                    Memaksimalkan durasi retensi video melalui pacing yang presisi di 3 detik awal. Menjamin audiens tidak melakukan skip pada video Reels, TikTok, atau Shorts Anda.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm hover:border-violet-500/40 hover:shadow-md transition-all duration-300">
+                <div class="bg-violet-50 text-violet-600 p-4 rounded-2xl w-fit mb-6">
+                    <i class="fa-solid fa-arrow-trend-up text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Sound Design Imersif</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                    Penerapan efek suara, riser, musik latar berlisensi bebas hak cipta, serta pemolesan audio pengisi suara (*voiceover*) yang jernih untuk pengalaman nonton yang mendalam.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm hover:border-pink-500/40 hover:shadow-md transition-all duration-300">
+                <div class="bg-pink-50 text-pink-600 p-4 rounded-2xl w-fit mb-6">
+                    <i class="fa-solid fa-share-nodes text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Grafik Gerak & Aset Kustom</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                    Integrasi elemen teks kinetik pop-up berwarna-warni yang sedang tren, overlay grafis unik, serta penyesuaian rasio aspek yang tepat untuk efisiensi performa platform.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="tentang-saya" class="py-24 px-6 max-w-6xl mx-auto scroll-mt-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-5 relative">
+                <div class="absolute -inset-1.5 bg-gradient-to-tr from-indigo-500 to-violet-500 rounded-3xl blur-md opacity-20"></div>
+                <div class="relative bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xl">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" alt="Foto Idul" class="w-full aspect-[4/5] object-cover">
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-transparent p-6 pt-16">
+                        <h3 class="text-2xl font-black text-white">Idul</h3>
+                        <p class="text-xs text-indigo-300 font-extrabold tracking-widest uppercase mt-1">Lead Video Editor • IdulStudio</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-6">
+                <div class="text-xs text-indigo-600 font-extrabold tracking-widest uppercase">Perancang di Balik Layar</div>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 leading-tight">Siap Membantu Akun Media Sosial Anda Berkembang Pesat</h2>
+                
+                <p class="text-slate-600 leading-relaxed font-medium">
+                    Halo! Saya <strong>Idul</strong>, kreator video dan editor visual di balik studio kreatif <strong class="text-indigo-600">IdulStudio</strong>. Saya mendedikasikan pengalaman bertahun-tahun di dunia digital untuk merancang, memotong, dan menyempurnakan rangkaian cuplikan video mentah menjadi cerita visual yang bernilai tinggi.
+                </p>
+                <p class="text-slate-600 leading-relaxed">
+                    Saya memahami bahwa audiens era saat ini sangat sensitif dengan detik-detik awal video. Oleh karena itu, pendekatan pengeditan kami tidak hanya berfokus pada keindahan transisi visual semata, tetapi juga didasarkan pada strategi psikologis untuk mempertahankan perhatian penonton hingga akhir video.
+                </p>
+
+                <div class="space-y-3 pt-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </div>
+                        <span class="text-sm font-bold text-slate-800">Pemahaman mendalam tentang tren audio & visual terkini</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </div>
+                        <span class="text-sm font-bold text-slate-800">Alur kerja pengerjaan teratur dan on-time delivery</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </div>
+                        <span class="text-sm font-bold text-slate-800">Komunikasi transparan & kustomisasi revisi tak berbelit-belit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="hubungi-saya" class="py-24 bg-slate-100 border-t border-slate-200/60 px-6 scroll-mt-20">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="text-xs text-indigo-600 font-extrabold tracking-widest uppercase">Konsultasi Project</div>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900">Mari Ciptakan Karya Hebat Bersama</h2>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        Punya pertanyaan, ide kolaborasi menarik, atau butuh jasa penataan penyuntingan video berkelanjutan untuk brand Anda? Isi brief di samping atau langsung hubungi kami lewat saluran resmi di bawah ini.
+                    </p>
+
+                    <div class="space-y-4 pt-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200 text-indigo-600 shadow-sm shrink-0">
+                                <i class="fa-solid fa-envelope text-lg"></i>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Kirim Email</span>
+                                <strong class="text-sm sm:text-base text-slate-900 font-semibold">halo@idulstudio.co</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200 text-emerald-600 shadow-sm shrink-0">
+                                <i class="fa-solid fa-phone text-lg"></i>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">WhatsApp</span>
+                                <strong class="text-sm sm:text-base text-slate-900 font-semibold">+62 812-3456-7890</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-200 text-blue-600 shadow-sm shrink-0">
+                                <i class="fa-solid fa-location-dot text-lg"></i>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Domisili</span>
+                                <strong class="text-sm sm:text-base text-slate-900 font-semibold">Bandung - Jakarta, Indonesia</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7">
+                    <form onsubmit="handleSendBrief(event)" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-md space-y-5">
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Formulir Tanya Jawab & Briefing</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Nama Lengkap</label>
+                                <input type="text" required placeholder="Contoh: Budi Santoso" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Alamat Email / WA</label>
+                                <input type="text" required placeholder="Contoh: budi@gmail.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Kebutuhan Utama</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                                    <option>Pengeditan Video Bulanan (Reels/TikTok)</option>
+                                    <option>Penyuntingan Video YouTube (Cinematic/Vlog)</option>
+                                    <option>Kebutuhan Commercial Brand Iklan</option>
+                                    <option>Konsultasi Kreatif & Lainnya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Estimasi Alokasi Budget</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+                                    <option>Di bawah Rp 3 Juta / Project</option>
+                                    <option>Rp 3 Juta - Rp 10 Juta</option>
+                                    <option>Di atas Rp 10 Juta</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Detail Brief & Referensi Gaya Video</label>
+                            <textarea rows="4" required placeholder="Contoh: Saya membutuhkan editing beritme cepat, penuh transisi dan teks modern, mirip dengan akun referensi @..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-md shadow-indigo-500/10 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-comment"></i>
+                            Kirim Pesan Penawaran
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="bg-white py-12 px-6 border-t border-slate-200/80 text-center text-slate-500 text-xs">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-video text-xs"></i>
+                </div>
+                <span class="font-extrabold text-slate-950 text-base">IdulStudio</span>
+            </div>
+            <p class="font-medium">© 2026 IdulStudio. Seluruh Hak Cipta Dilindungi.</p>
+            <div class="flex gap-4 font-bold uppercase tracking-wider text-[10px]">
+                <a href="#gallery-portfolio" class="hover:text-indigo-600 transition">Instagram</a>
+                <a href="#gallery-portfolio" class="hover:text-indigo-600 transition">TikTok</a>
+                <a href="#gallery-portfolio" class="hover:text-indigo-600 transition">YouTube</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Video Popup Modal -->
+    <div id="video-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden max-w-4xl w-full relative shadow-2xl transition-all duration-200">
+            
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <div>
+                    <span id="modal-platform-badge" class="text-[9px] uppercase font-bold text-indigo-600 tracking-widest block mb-0.5">
+                        PLATFORM • CATEGORY
+                    </span>
+                    <h3 id="modal-video-title" class="font-extrabold text-slate-900 text-sm sm:text-base line-clamp-1">Video Title</h3>
+                </div>
+                <button type="button" onclick="closeVideoModal()" class="p-2 hover:bg-slate-200 rounded-full text-slate-600 hover:text-slate-900 transition shrink-0">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Embed video box container -->
+            <div id="modal-video-container" class="bg-black aspect-video w-full flex items-center justify-center">
+                <!-- Filled dynamically by JavaScript -->
+            </div>
+
+            <!-- Modal Detail Info Grid -->
+            <div class="p-6 bg-slate-50 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <h4 class="text-xs text-slate-500 font-bold mb-1 uppercase tracking-wider">Teknik & Alur Editing:</h4>
+                    <p id="modal-video-desc" class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                        Description of the video's pacing, grading, and layout techniques.
+                    </p>
+                </div>
+
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2 shadow-sm shrink-0 self-start">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-slate-500 font-normal">Klien:</span>
+                        <span id="modal-client-text" class="text-slate-900">Client Name</span>
+                    </div>
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-slate-500 font-normal">Views:</span>
+                        <span id="modal-views-text" class="text-indigo-600">Views count</span>
+                    </div>
+                    <div id="modal-retention-row" class="flex justify-between text-xs font-semibold">
+                        <span class="text-slate-500 font-normal">Retensi:</span>
+                        <span id="modal-retention-text" class="text-emerald-600">Retention rate</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Default professional portfolio items for IdulStudio
+        const DEFAULT_PORTFOLIO = [
+          {
+            id: '1',
+            title: 'Cinematic Travel Vlog - Keindahan Labuan Bajo',
+            client: 'Rian Kaldera',
+            platform: 'youtube',
+            category: 'Cinematic Vlog',
+            thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+            embedId: 'dQw4w9WgXcQ', 
+            views: '240K+',
+            retention: '72%',
+            description: 'Penerapan color grading bertema teal & orange, penataan sound design alam yang imersif, serta pacing cepat yang sukses menjaga tingkat durasi tontonan (Average View Duration).'
+          },
+          {
+            id: '2',
+            title: 'Streetwear Oversized Transition Reel',
+            client: 'UrbanVibe Co.',
+            platform: 'instagram',
+            category: 'Fashion & Transitions',
+            thumbnail: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
+            embedId: 'dQw4w9WgXcQ', 
+            views: '890K+',
+            retention: '94%',
+            description: 'Video transisi hyper-sync berkecepatan tinggi dengan ketukan ketat musik lofi-hiphop. Menggunakan teknik whip pans dan mask transitions digital.'
+          },
+          {
+            id: '3',
+            title: 'POV: Kuliner Tersembunyi Ramen Enak di Bandung',
+            client: '@kulinerbdg',
+            platform: 'tiktok',
+            category: 'Short-form Food',
+            thumbnail: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80',
+            embedId: 'https://www.tiktok.com',
+            views: '2.4M+',
+            retention: '89%',
+            description: 'Editing beritme tinggi untuk audiens TikTok dengan caption teks pop-up yang estetik, sound effect penekanan komedi yang pas, dan 3 detik awal yang memikat.'
+          },
+          {
+            id: '4',
+            title: 'Corporate Brand Launch - Solusi Masa Depan Hijau',
+            client: 'Bumi Lestari Tech',
+            platform: 'youtube',
+            category: 'Corporate Commercial',
+            thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+            embedId: 'dQw4w9WgXcQ',
+            views: '65K+',
+            retention: '61%',
+            description: 'Editing bergaya clean, infografis animasi minimalis, gradasi warna profesional yang kalem, serta pengaturan alur narasi pengisi suara yang presisi.'
+          }
+        ];
+
+        // Default Managed Social Media Accounts (former clients)
+        const DEFAULT_ACCOUNTS = [
+          {
+            id: 'acc-1',
+            name: '@selera_nusantara',
+            platform: 'instagram',
+            niche: 'Food & Beverage',
+            followers: '120.5K',
+            growth: '+15% MoM',
+            avgViews: '65K',
+            logo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=150&q=80',
+            role: 'Lead Video Editor & Content Planner'
+          },
+          {
+            id: 'acc-2',
+            name: 'GadgetSpace Indo',
+            platform: 'tiktok',
+            niche: 'Tech & Gadget Review',
+            followers: '340K',
+            growth: '+40% MoM',
+            avgViews: '250K',
+            logo: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=150&q=80',
+            role: 'Social Media Video Editor'
+          }
+        ];
+
+        // Core App State variables
+        let portfolioItems = [];
+        let managedAccounts = [];
+        let activeFilter = 'all';
+        let isAdminMode = false;
+        let adminTab = 'portfolio';
+
+        // Load data on page launch
+        window.addEventListener('DOMContentLoaded', () => {
+            initData();
+            renderAll();
+        });
+
+        // Initialize state from LocalStorage or Default
+        function initData() {
+            try {
+                const savedPortfolio = localStorage.getItem('idulstudio_portfolio_v2');
+                portfolioItems = savedPortfolio ? JSON.parse(savedPortfolio) : DEFAULT_PORTFOLIO;
+            } catch (e) {
+                portfolioItems = DEFAULT_PORTFOLIO;
+            }
+
+            try {
+                const savedAccounts = localStorage.getItem('idulstudio_accounts_v2');
+                managedAccounts = savedAccounts ? JSON.parse(savedAccounts) : DEFAULT_ACCOUNTS;
+            } catch (e) {
+                managedAccounts = DEFAULT_ACCOUNTS;
+            }
+        }
+
+        // Sync local storage
+        function syncPortfolio() {
+            localStorage.setItem('idulstudio_portfolio_v2', JSON.stringify(portfolioItems));
+        }
+
+        function syncAccounts() {
+            localStorage.setItem('idulstudio_accounts_v2', JSON.stringify(managedAccounts));
+        }
+
+        // Global render router
+        function renderAll() {
+            renderPortfolioGrid();
+            renderAccountsGrid();
+            if (isAdminMode) {
+                renderAdminPortfolioList();
+                renderAdminAccountsList();
+            }
+        }
+
+        // Toggle admin panel view
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            const adminPanel = document.getElementById('admin-panel');
+            const adminBtn = document.getElementById('btn-admin-toggle');
+            const toggleText = document.getElementById('admin-toggle-text');
+
+            if (isAdminMode) {
+                adminPanel.classList.remove('hidden');
+                toggleText.innerText = "Tutup Dashboard";
+                adminBtn.className = "flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20 transition-all";
+                
+                // Scroll to Admin Panel anchor
+                setTimeout(() => {
+                    adminPanel.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+                
+                renderAdminPortfolioList();
+                renderAdminAccountsList();
+            } else {
+                adminPanel.classList.add('hidden');
+                toggleText.innerText = "Kelola Portofolio";
+                adminBtn.className = "flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border bg-white text-slate-700 border-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 transition-all";
+            }
+        }
+
+        // Toggle Admin tabs
+        function setAdminTab(tabName) {
+            adminTab = tabName;
+            
+            // UI tab states update
+            const tabs = ['portfolio', 'accounts', 'data'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const panel = document.getElementById(`admin-tab-${t}`);
+                
+                if (t === tabName) {
+                    btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm";
+                    panel.classList.remove('hidden');
+                } else {
+                    btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-950 hover:bg-slate-50";
+                    panel.classList.add('hidden');
+                }
+            });
+        }
+
+        // Render Portfolio Grid on public area
+        function renderPortfolioGrid() {
+            const container = document.getElementById('portfolio-grid');
+            const filtered = activeFilter === 'all' 
+                ? portfolioItems 
+                : portfolioItems.filter(item => item.platform === activeFilter);
+
+            if (filtered.length === 0) {
+                container.className = "block max-w-md mx-auto";
+                container.innerHTML = `
+                    <div class="bg-white p-12 text-center rounded-3xl border border-slate-200 shadow-sm">
+                        <i class="fa-solid fa-video text-5xl text-slate-300 mb-4 block"></i>
+                        <h4 class="font-bold text-slate-800 mb-1">Belum Ada Karya</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Tidak ada video yang terdaftar untuk platform ini. Klik "Kelola Portofolio" di atas untuk menambahkan karya baru Anda!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.className = "grid grid-cols-1 md:grid-cols-2 gap-8";
+            container.innerHTML = filtered.map(item => {
+                let badgeClass = '';
+                let platformIcon = '';
+                
+                if (item.platform === 'youtube') {
+                    badgeClass = 'bg-red-600 text-white';
+                    platformIcon = '<i class="fa-brands fa-youtube"></i>';
+                } else if (item.platform === 'instagram') {
+                    badgeClass = 'bg-gradient-to-r from-pink-500 to-indigo-600 text-white';
+                    platformIcon = '<i class="fa-brands fa-instagram"></i>';
+                } else {
+                    badgeClass = 'bg-slate-900 text-white';
+                    platformIcon = '<i class="fa-solid fa-tv"></i>';
+                }
+
+                const retentionBadge = item.retention && item.retention !== 'N/A' ? `
+                    <span class="bg-emerald-50/95 backdrop-blur-md border border-emerald-100 text-emerald-700 text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm font-semibold">
+                        <i class="fa-solid fa-arrow-trend-up text-emerald-600"></i>
+                        <strong>${item.retention}</strong> Retensi
+                    </span>
+                ` : '';
+
+                return `
+                    <div class="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-indigo-400 hover:shadow-xl transition-all duration-300 flex flex-col justify-between shadow-sm">
+                        <div class="relative aspect-video w-full overflow-hidden bg-slate-100">
+                            <img src="${item.thumbnail}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-slate-950/10 group-hover:bg-slate-950/20 transition-all duration-300"></div>
+
+                            <!-- Badges -->
+                            <div class="absolute top-4 left-4 z-10">
+                                <span class="flex items-center gap-1.5 ${badgeClass} font-extrabold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
+                                    ${platformIcon} ${item.platform}
+                                </span>
+                            </div>
+
+                            <!-- Play Action Trigger Overlay -->
+                            <div class="absolute inset-0 flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openVideoModal('${item.id}')" type="button" class="bg-indigo-600 text-white p-4 rounded-full shadow-lg shadow-indigo-600/30 scale-95 group-hover:scale-105 transition-all hover:bg-indigo-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-play text-lg ml-0.5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Operational Metrics Banner -->
+                            <div class="absolute bottom-4 left-4 right-4 flex justify-between items-center pointer-events-none">
+                                <span class="bg-white/95 backdrop-blur-md border border-slate-100 text-slate-800 text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm font-semibold">
+                                    <i class="fa-solid fa-eye text-indigo-600"></i>
+                                    <strong>${item.views}</strong> Views
+                                </span>
+                                ${retentionBadge}
+                            </div>
+                        </div>
+
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider mb-1">${item.category}</div>
+                                <h3 onclick="openVideoModal('${item.id}')" class="text-lg font-bold text-slate-900 mb-2 line-clamp-2 hover:text-indigo-600 transition cursor-pointer">
+                                    ${item.title}
+                                </h3>
+                                <div class="text-xs text-slate-500 mb-4">Partner / Klien: <strong class="text-slate-700">${item.client}</strong></div>
+                                <p class="text-slate-600 text-sm leading-relaxed line-clamp-3">
+                                    ${item.description}
+                                </p>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+                                <button onclick="openVideoModal('${item.id}')" type="button" class="text-xs text-indigo-600 hover:text-indigo-700 font-extrabold flex items-center gap-1.5 transition-colors">
+                                    Tonton Sekarang <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                </button>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">CapCut / Premiere Pro</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Managed Client Accounts
+        function renderAccountsGrid() {
+            const container = document.getElementById('accounts-grid');
+            if (managedAccounts.length === 0) {
+                container.className = "block max-w-sm mx-auto";
+                container.innerHTML = `
+                    <div class="bg-slate-50 p-10 text-center rounded-3xl border border-slate-200 shadow-sm">
+                        <i class="fa-solid fa-users text-4xl text-slate-300 mb-3 block"></i>
+                        <p class="text-sm font-bold text-slate-700">Daftar Akun Kosong</p>
+                        <p class="text-xs text-slate-500 mt-1">Anda dapat menambah data di menu kelola admin.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.className = "grid grid-cols-1 md:grid-cols-2 gap-8";
+            container.innerHTML = managedAccounts.map(acc => {
+                let platformBadge = '';
+                if (acc.platform === 'youtube') {
+                    platformBadge = '<span class="text-[10px] bg-red-50 text-red-600 border border-red-100 font-extrabold uppercase px-2 py-0.5 rounded-lg">YouTube</span>';
+                } else if (acc.platform === 'instagram') {
+                    platformBadge = '<span class="text-[10px] bg-pink-50 text-pink-600 border border-pink-100 font-extrabold uppercase px-2 py-0.5 rounded-lg">Instagram</span>';
+                } else {
+                    platformBadge = '<span class="text-[10px] bg-slate-100 text-slate-800 border border-slate-200 font-extrabold uppercase px-2 py-0.5 rounded-lg">TikTok</span>';
+                }
+
+                return `
+                    <div class="bg-slate-50/50 border border-slate-200 rounded-3xl p-6 hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <img src="${acc.logo}" alt="${acc.name}" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-100 shadow-sm">
+                                <div>
+                                    <h3 class="font-extrabold text-lg text-slate-900">${acc.name}</h3>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        ${platformBadge}
+                                        <span class="text-xs text-slate-500 font-medium">${acc.niche}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span class="bg-indigo-50 border border-indigo-100/50 text-indigo-700 text-[10px] px-3 py-1.5 rounded-xl font-extrabold tracking-wider uppercase self-start sm:self-auto shrink-0">
+                                ${acc.role}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-200">
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100 text-center">
+                                <span class="block text-[9px] text-slate-400 uppercase tracking-widest font-extrabold mb-1">Followers</span>
+                                <strong class="text-base sm:text-lg text-slate-900">${acc.followers}</strong>
+                            </div>
+                            <div class="bg-emerald-50/50 p-3 rounded-2xl border border-emerald-100 text-center">
+                                <span class="block text-[9px] text-emerald-600 uppercase tracking-widest font-extrabold mb-1">Pertumbuhan</span>
+                                <strong class="text-base sm:text-lg text-emerald-700">${acc.growth}</strong>
+                            </div>
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100 text-center">
+                                <span class="block text-[9px] text-slate-400 uppercase tracking-widest font-extrabold mb-1">Avg. Views</span>
+                                <strong class="text-base sm:text-lg text-slate-900">${acc.avgViews}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Change Gallery filter categories
+        function setFilter(platform) {
+            activeFilter = platform;
+            const filters = ['all', 'youtube', 'instagram', 'tiktok'];
+            
+            filters.forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === platform) {
+                    if (f === 'all') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 bg-indigo-600 text-white shadow-md";
+                    else if (f === 'youtube') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 bg-red-600 text-white shadow-md";
+                    else if (f === 'instagram') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 bg-gradient-to-tr from-amber-500 via-pink-500 to-indigo-600 text-white shadow-md";
+                    else if (f === 'tiktok') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 bg-slate-950 text-white shadow-md";
+                } else {
+                    if (f === 'all') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 text-slate-600 hover:text-slate-950 hover:bg-slate-50";
+                    else if (f === 'youtube') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50/50";
+                    else if (f === 'instagram') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-pink-600 hover:bg-pink-50/50";
+                    else if (f === 'tiktok') btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 text-slate-600 hover:text-slate-950 hover:bg-slate-100";
+                }
+            });
+
+            renderPortfolioGrid();
+        }
+
+        // Render Portfolio list in Admin dashboard
+        function renderAdminPortfolioList() {
+            document.getElementById('admin-portfolio-count').innerText = portfolioItems.length;
+            const container = document.getElementById('admin-portfolio-list');
+            
+            container.innerHTML = portfolioItems.map(item => `
+                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-indigo-200 transition">
+                    <div class="flex items-center gap-4">
+                        <img src="${item.thumbnail}" alt="${item.title}" class="w-16 h-12 rounded-lg object-cover shrink-0 border border-slate-200">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-sm text-slate-900 line-clamp-1">${item.title}</h4>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-600 uppercase border border-indigo-100 shrink-0">
+                                    ${item.platform}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500">Klien: ${item.client} • ${item.category}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 ml-4 shrink-0">
+                        <button onclick="editPortfolioClick('${item.id}')" type="button" class="p-2 hover:bg-indigo-50 text-indigo-600 rounded-xl transition" title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deletePortfolio('${item.id}')" type="button" class="p-2 hover:bg-red-50 text-red-600 rounded-xl transition" title="Hapus">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Accounts list in Admin dashboard
+        function renderAdminAccountsList() {
+            document.getElementById('admin-accounts-count').innerText = managedAccounts.length;
+            const container = document.getElementById('admin-accounts-list');
+
+            container.innerHTML = managedAccounts.map(acc => `
+                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-indigo-200 transition">
+                    <div class="flex items-center gap-4">
+                        <img src="${acc.logo}" alt="${acc.name}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-sm text-slate-900">${acc.name}</h4>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-600 uppercase border border-indigo-100 shrink-0">
+                                    ${acc.platform}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500">${acc.niche} • ${acc.followers} Followers</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 ml-4 shrink-0">
+                        <button onclick="editAccountClick('${acc.id}')" type="button" class="p-2 hover:bg-indigo-50 text-indigo-600 rounded-xl transition" title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteAccount('${acc.id}')" type="button" class="p-2 hover:bg-red-50 text-red-600 rounded-xl transition" title="Hapus">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Notification Alerts
+        function showAlert(msg, type = 'success') {
+            const toast = document.getElementById('alert-toast');
+            const toastIcon = document.getElementById('alert-icon');
+            const toastMsg = document.getElementById('alert-msg');
+
+            toastMsg.innerText = msg;
+            if (type === 'error') {
+                toast.className = "fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl backdrop-blur-md border border-red-200 bg-red-50 text-red-800 transition-all duration-300 transform translate-y-0 opacity-100";
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-red-500 text-lg";
+            } else {
+                toast.className = "fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl backdrop-blur-md border border-emerald-200 bg-emerald-50 text-emerald-800 transition-all duration-300 transform translate-y-0 opacity-100";
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-500 text-lg";
+            }
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-150%]');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3500);
+        }
+
+        // Save Portfolio Item (Add/Edit)
+        function handleSavePortfolio(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-portfolio-id').value;
+            const title = document.getElementById('p-title').value;
+            const client = document.getElementById('p-client').value;
+            const platform = document.getElementById('p-platform').value;
+            const category = document.getElementById('p-category').value || 'General Video';
+            const embedId = document.getElementById('p-embedId').value;
+            const views = document.getElementById('p-views').value || 'N/A';
+            const retention = document.getElementById('p-retention').value || 'N/A';
+            const thumbnailInput = document.getElementById('p-thumbnail').value;
+            const description = document.getElementById('p-description').value;
+
+            const defaultThumbs = {
+                youtube: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80',
+                instagram: 'https://images.unsplash.com/photo-1611224885990-ab7363d1f2a9?auto=format&fit=crop&w=800&q=80',
+                tiktok: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80'
+            };
+
+            const thumbnail = thumbnailInput.trim() !== '' 
+              ? thumbnailInput 
+              : (defaultThumbs[platform] || 'https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80');
+
+            if (editId) {
+                // Update
+                portfolioItems = portfolioItems.map(item => item.id === editId ? {
+                    id: editId, title, client, platform, category, thumbnail, embedId, views, retention, description
+                } : item);
+                showAlert('Portofolio berhasil diperbarui!');
+            } else {
+                // Add new
+                const newItem = {
+                    id: 'port_' + Date.now(),
+                    title, client, platform, category, thumbnail, embedId, views, retention, description
+                };
+                portfolioItems.unshift(newItem);
+                showAlert('Karya portofolio baru ditambahkan!');
+            }
+
+            syncPortfolio();
+            resetPortfolioForm();
+            renderAll();
+        }
+
+        function resetPortfolioForm() {
+            document.getElementById('edit-portfolio-id').value = '';
+            document.getElementById('p-title').value = '';
+            document.getElementById('p-client').value = '';
+            document.getElementById('p-platform').value = 'youtube';
+            document.getElementById('p-category').value = '';
+            document.getElementById('p-embedId').value = '';
+            document.getElementById('p-views').value = '';
+            document.getElementById('p-retention').value = '';
+            document.getElementById('p-thumbnail').value = '';
+            document.getElementById('p-description').value = '';
+
+            document.getElementById('portfolio-form-title').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Video Baru`;
+            document.getElementById('btn-cancel-p-edit').classList.add('hidden');
+        }
+
+        function editPortfolioClick(id) {
+            const item = portfolioItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('edit-portfolio-id').value = item.id;
+            document.getElementById('p-title').value = item.title;
+            document.getElementById('p-client').value = item.client;
+            document.getElementById('p-platform').value = item.platform;
+            document.getElementById('p-category').value = item.category;
+            document.getElementById('p-embedId').value = item.embedId;
+            document.getElementById('p-views').value = item.views;
+            document.getElementById('p-retention').value = item.retention;
+            document.getElementById('p-thumbnail').value = item.thumbnail;
+            document.getElementById('p-description').value = item.description;
+
+            document.getElementById('portfolio-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Video Portofolio`;
+            document.getElementById('btn-cancel-p-edit').classList.remove('hidden');
+
+            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deletePortfolio(id) {
+            portfolioItems = portfolioItems.filter(i => i.id !== id);
+            syncPortfolio();
+            showAlert('Portofolio berhasil dihapus!');
+            renderAll();
+        }
+
+        // Save Account (Add/Edit)
+        function handleSaveAccount(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-account-id').value;
+            const name = document.getElementById('a-name').value;
+            const platform = document.getElementById('a-platform').value;
+            const niche = document.getElementById('a-niche').value || 'General';
+            const followers = document.getElementById('a-followers').value;
+            const growth = document.getElementById('a-growth').value || 'Steady';
+            const avgViews = document.getElementById('a-avgViews').value || 'N/A';
+            const logoInput = document.getElementById('a-logo').value;
+            const role = document.getElementById('a-role').value || 'Editor / Planner';
+
+            const defaultLogos = {
+              instagram: 'https://images.unsplash.com/photo-1611224885990-ab7363d1f2a9?auto=format&fit=crop&w=150&q=80',
+              tiktok: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=150&q=80',
+              youtube: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=150&q=80'
+            };
+
+            const logo = logoInput.trim() !== '' 
+              ? logoInput 
+              : (defaultLogos[platform] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
+
+            if (editId) {
+                managedAccounts = managedAccounts.map(acc => acc.id === editId ? {
+                    id: editId, name, platform, niche, followers, growth, avgViews, logo, role
+                } : acc);
+                showAlert('Data brand klien berhasil diperbarui!');
+            } else {
+                const newAcc = {
+                    id: 'acc_' + Date.now(),
+                    name, platform, niche, followers, growth, avgViews, logo, role
+                };
+                managedAccounts.push(newAcc);
+                showAlert('Akun kelolaan baru berhasil ditambahkan!');
+            }
+
+            syncAccounts();
+            resetAccountForm();
+            renderAll();
+        }
+
+        function resetAccountForm() {
+            document.getElementById('edit-account-id').value = '';
+            document.getElementById('a-name').value = '';
+            document.getElementById('a-platform').value = 'instagram';
+            document.getElementById('a-niche').value = '';
+            document.getElementById('a-followers').value = '';
+            document.getElementById('a-growth').value = '';
+            document.getElementById('a-avgViews').value = '';
+            document.getElementById('a-logo').value = '';
+            document.getElementById('a-role').value = '';
+
+            document.getElementById('account-form-title').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Brand Baru`;
+            document.getElementById('btn-cancel-a-edit').classList.add('hidden');
+        }
+
+        function editAccountClick(id) {
+            const acc = managedAccounts.find(a => a.id === id);
+            if (!acc) return;
+
+            document.getElementById('edit-account-id').value = acc.id;
+            document.getElementById('a-name').value = acc.name;
+            document.getElementById('a-platform').value = acc.platform;
+            document.getElementById('a-niche').value = acc.niche;
+            document.getElementById('a-followers').value = acc.followers;
+            document.getElementById('a-growth').value = acc.growth;
+            document.getElementById('a-avgViews').value = acc.avgViews;
+            document.getElementById('a-logo').value = acc.logo;
+            document.getElementById('a-role').value = acc.role;
+
+            document.getElementById('account-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Brand Klien`;
+            document.getElementById('btn-cancel-a-edit').classList.remove('hidden');
+
+            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteAccount(id) {
+            managedAccounts = managedAccounts.filter(a => a.id !== id);
+            syncAccounts();
+            showAlert('Data brand kelolaan berhasil dihapus!');
+            renderAll();
+        }
+
+        // Export Data JSON
+        function exportData() {
+            const fullData = {
+                portfolio: portfolioItems,
+                accounts: managedAccounts
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "idulstudio_backup_v2.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showAlert('Data JSON berhasil diekspor! Simpan file ini untuk cadangan.');
+        }
+
+        // Import Data JSON
+        function handleImportJson(e) {
+            const fileReader = new FileReader();
+            if (e.target.files && e.target.files[0]) {
+                fileReader.readAsText(e.target.files[0], "UTF-8");
+                fileReader.onload = (event) => {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        if (parsed.portfolio && Array.isArray(parsed.portfolio)) {
+                            portfolioItems = parsed.portfolio;
+                            syncPortfolio();
+                        }
+                        if (parsed.accounts && Array.isArray(parsed.accounts)) {
+                            managedAccounts = parsed.accounts;
+                            syncAccounts();
+                        }
+                        showAlert('Data sukses diimpor ke sistem lokal browser Anda!');
+                        renderAll();
+                    } catch (err) {
+                        showAlert('Format file tidak sesuai atau rusak!', 'error');
+                    }
+                };
+            }
+        }
+
+        // Copy Code Format to Clipboard
+        function copyCodeForVercel() {
+            const codeFormat = {
+              DEFAULT_PORTFOLIO: portfolioItems,
+              DEFAULT_ACCOUNTS: managedAccounts
+            };
+            const codeString = JSON.stringify(codeFormat, null, 2);
+            
+            // Safe copy to clipboard
+            const el = document.createElement('textarea');
+            el.value = codeString;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showAlert('Kode JSON disalin! Tempel di baris DEFAULT_PORTFOLIO/ACCOUNTS.');
+        }
+
+        // Reset Data custom modal triggers
+        function openResetModal() {
+            document.getElementById('confirm-reset-modal').classList.remove('hidden');
+            document.getElementById('confirm-reset-modal').classList.add('flex');
+        }
+
+        function closeResetModal() {
+            document.getElementById('confirm-reset-modal').classList.add('hidden');
+            document.getElementById('confirm-reset-modal').classList.remove('flex');
+        }
+
+        function handleResetToDefault() {
+            portfolioItems = DEFAULT_PORTFOLIO;
+            managedAccounts = DEFAULT_ACCOUNTS;
+            syncPortfolio();
+            syncAccounts();
+            closeResetModal();
+            showAlert('Kembali ke data bawaan IdulStudio!');
+            renderAll();
+        }
+
+        // Contact briefing handler
+        function handleSendBrief(e) {
+            e.preventDefault();
+            showAlert('Brief Anda berhasil dikirim! Tim IdulStudio akan segera menghubungi Anda.');
+            e.target.reset();
+        }
+
+        // Open Modal Player Video
+        function openVideoModal(id) {
+            const item = portfolioItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-platform-badge').innerText = `${item.platform} • ${item.category}`;
+            document.getElementById('modal-video-title').innerText = item.title;
+            document.getElementById('modal-video-desc').innerText = item.description;
+            document.getElementById('modal-client-text').innerText = item.client;
+            document.getElementById('modal-views-text').innerText = item.views;
+
+            const retentionRow = document.getElementById('modal-retention-row');
+            if (item.retention && item.retention !== 'N/A') {
+                retentionRow.classList.remove('hidden');
+                document.getElementById('modal-retention-text').innerText = item.retention;
+            } else {
+                retentionRow.classList.add('hidden');
+            }
+
+            const videoContainer = document.getElementById('modal-video-container');
+
+            if (item.platform === 'youtube') {
+                videoContainer.innerHTML = `
+                    <iframe 
+                      class="w-full h-full"
+                      src="https://www.youtube.com/embed/${item.embedId}?autoplay=1&rel=0"
+                      title="${item.title}"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                `;
+            } else {
+                // Portrait TikTok / Reels mock player
+                const externalLink = item.embedId.includes('http') ? item.embedId : "https://tiktok.com";
+                videoContainer.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-center p-6 relative">
+                      <div class="w-[150px] sm:w-[180px] aspect-[9/16] bg-slate-950 rounded-3xl border-4 border-slate-700 overflow-hidden shadow-2xl relative flex flex-col justify-between">
+                        <img src="${item.thumbnail}" alt="Vertical Thumbnail" class="absolute inset-0 w-full h-full object-cover filter brightness-75">
+                        
+                        <div class="relative z-10 p-3 flex justify-between items-center text-white/80">
+                          <span class="text-[8px] font-bold">Mengikuti</span>
+                          <span class="text-[8px] font-bold border-b-2 border-white pb-0.5">Untuk Anda</span>
+                        </div>
+
+                        <div class="relative z-10 flex items-center justify-center">
+                          <div class="w-10 h-10 bg-indigo-600/90 rounded-full flex items-center justify-center text-white">
+                            <i class="fa-solid fa-play ml-0.5"></i>
+                          </div>
+                        </div>
+
+                        <div class="relative z-10 p-3 text-left text-[9px] text-white bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                          <p class="font-bold">${item.client}</p>
+                          <p class="line-clamp-2 text-slate-200 mt-1">${item.title}</p>
+                        </div>
+                      </div>
+
+                      <div class="mt-4 z-10 text-center">
+                        <p class="text-xs text-slate-300 max-w-sm">
+                          Mendeteksi format video vertikal. Klik tautan di bawah untuk melihat karya asli:
+                        </p>
+                        <a href="${externalLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-bold mt-2">
+                          Buka Link Video Asli <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                      </div>
+                    </div>
+                `;
+            }
+
+            const modal = document.getElementById('video-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Close Modal Video
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // Stop playing when closing (Clearing iframe elements)
+            document.getElementById('modal-video-container').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
